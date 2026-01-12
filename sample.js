@@ -1,0 +1,1 @@
+let arry = {54:{x:0,y:0,marked:false},65:{x:80,y:78,marked:true}};

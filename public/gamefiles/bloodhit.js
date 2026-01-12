@@ -1,0 +1,33 @@
+export class BloodHit{
+    constructor(game){
+        this.game=game;
+        this.x=this.game.player.x;
+        this.y=this.game.player.y;
+        this.width=100;
+        this.height=100;
+        this.frameX=0;
+        this.frameY=0;
+        this.maxFrame=7;
+        this.maxFrameY=4;
+        this.frameTimer=0;
+        this.fps=10;
+        this.frameInterval=1000/this.fps;
+        this.image=document.getElementById('bloodhit');
+        this.markedForDeletion=false;
+    }
+    update(deltatime)
+    {
+        this.x=this.game.player.x;
+        this.y=this.game.player.y;
+        if(this.frameTimer>this.frameInterval){
+             this.frameX+=1;
+        }else{
+            this.frameTimer+=deltatime;
+        }
+        if(this.frameX>this.maxFrame){this.markedForDeletion=true}
+         
+    }
+    draw(context){
+        context.drawImage(this.image,this.frameX*this.width,this.frameY*this.height,this.width,this.height,this.x,this.y,this.width,this.height);
+    }
+}

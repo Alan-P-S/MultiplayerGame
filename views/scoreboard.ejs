@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Among Us – Meeting Scoreboard</title>
+
+<style>
+* { box-sizing: border-box; user-select: none; }
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #1a1f3a, #000);
+  font-family: "Arial Rounded MT Bold", Arial, sans-serif;
+  color: white;
+  overflow: hidden;
+}
+
+/* EMERGENCY OVERLAY */
+#emergency {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  font-size: 48px;
+  font-weight: bold;
+  z-index: 999;
+  animation: flash 0.4s infinite alternate;
+}
+@keyframes flash {
+  from { opacity: 0.8; }
+  to { opacity: 1; }
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  padding: 16px;
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: #ff3b3b;
+  text-shadow: 0 0 15px #ff3b3b;
+  border-bottom: 3px solid #333;
+}
+
+/* BOARD */
+.board {
+  height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding: 18px;
+}
+
+/* PLAYER ROW */
+.player {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #111;
+  border: 3px solid #333;
+  border-radius: 14px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+/* LEADER */
+.player.leader {
+  border-color: gold;
+  box-shadow: 0 0 20px gold;
+}
+
+/* DEAD */
+.player.dead {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+/* IMPOSTOR */
+.player.impostor {
+  border-color: red;
+  box-shadow: 0 0 15px red;
+}
+
+/* LEFT */
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.name {
+  font-size: 18px;
+}
+
+/* RIGHT */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.kills {
+  font-size: 26px;
+  color: #ff3b3b;
+  text-shadow: 0 0 10px #ff3b3b;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* KILL POP */
+.pop {
+  animation: pop 0.3s ease;
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* VOTE */
+.vote {
+  font-size: 20px;
+  color: #00ffcc;
+}
+
+/* CONTROLS */
+.controls {
+  height: 80px;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #ff3b3b;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+
+</style>
+</head>
+
+<body>
+
+<div id="emergency">🚨 EMERGENCY MEETING 🚨</div>
+
+<div class="header">MEETING RESULTS</div>
+
+<div class="board" id="board"></div>
+
+<!-- DEMO CONTROLS (REMOVE IN GAME) -->
+<div class="controls">
+  <button onclick="randomKill()">Random Kill</button>
+  <button onclick="randomVote()">Random Vote</button>
+  <button onclick="toggleEmergency()">Emergency</button>
+</div>
+
+<script>
+const board = document.getElementById("board");
+const emergency = document.getElementById("emergency");
+
+const colors = [
+  "#ff3b3b","#3b6bff","#3bff6b","#ffe23b","#ff3bd6",
+  "#3bfff3","#ffffff","#ff8c3b","#9b59b6","#2ecc71"
+];
+
+// CREATE 40 PLAYERS
+const players = {};
+for (let i = 1; i <= 40; i++) {
+  players["Player " + i] = {
+    kills: 0,
+    color: colors[i % colors.length],
+    alive: true,
+    impostor: i % 10 === 0, // demo impostors
+    voted: false
+  };
+}
+
+function render() {
+  board.innerHTML = "";
+
+  const sorted = Object.entries(players)
+    .sort((a, b) => b[1].kills - a[1].kills);
+
+  sorted.forEach(([name, p], index) => {
+    const row = document.createElement("div");
+    row.className = "player";
+
+    if (index === 0 && p.kills > 0) row.classList.add("leader");
+    if (!p.alive) row.classList.add("dead");
+    if (p.impostor) row.classList.add("impostor");
+
+    row.innerHTML = `
+      <div class="left">
+        <div class="avatar" style="background:${p.color}"></div>
+        <div class="name">${name}</div>
+      </div>
+      <div class="right">
+        ${p.voted ? '<div class="vote">✔</div>' : ''}
+        <div class="kills">${p.kills}</div>
+      </div>
+    `;
+
+    board.appendChild(row);
+  });
+}
+
+// DEMO ACTIONS
+function randomKill() {
+  const alive = Object.keys(players).filter(p => players[p].alive);
+  if (!alive.length) return;
+
+  const killer = alive[Math.floor(Math.random() * alive.length)];
+  players[killer].kills++;
+
+  // random death
+  const victim = alive[Math.floor(Math.random() * alive.length)];
+  if (victim !== killer) players[victim].alive = false;
+
+  render();
+}
+
+function randomVote() {
+  Object.values(players).forEach(p => p.voted = false);
+  const keys = Object.keys(players);
+  players[keys[Math.floor(Math.random() * keys.length)]].voted = true;
+  render();
+}
+
+function toggleEmergency() {
+  emergency.style.display = "flex";
+  setTimeout(() => emergency.style.display = "none", 2000);
+}
+
+render();
+</script>
+
+</body>
+</html>
