@@ -1,4 +1,3 @@
-import { Bullet } from "./bullet.js";
 import { BloodHit } from "./bloodhit.js";
 export class Player{
     constructor(game){

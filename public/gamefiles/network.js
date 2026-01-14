@@ -1,22 +1,21 @@
 import { Bullet } from "./bullet.js";
-const socket = io();
+import {socket} from "./socket.js"
 export class Network{
     constructor(game){
+        console.log('network created');
         this.game = game;
         this.otherPlayerData = [];
         this.otherPlayerBulletData = [];
         this.image;
         this.id = Math.random()*60;
         this.bulletId;
-        this.socket = socket;
+        this.socket=socket;
+        this.socket.on('connect',()=>{console.log('connected'+this.socket.id)})
         this.socket.on("players",e=>{       
             this.otherPlayerData[e.id]=e;
             
         })
         this.socket.on('bullets',e=>{
-            // this.bulletId = Math.random()*100;
-            // this.otherPlayerBulletData[e.id]=e;
-            // console.log(this.otherPlayerBulletData);
             console.log('bullet recieved',e);
             this.game.bullets.push(new Bullet(e.x,e.y,e.dx,e.dy,e.game));
         })
@@ -47,13 +46,6 @@ export class Network{
             image:this.game.player.image.id,
         });
         
-        ///the conditions include the interval between bullet and check player is pressing shooting key
-        // this.game.bullets.forEach(b=>{
-            //  this.socket.emit('bullet',{x:b.startX,y:b.startY,dx:b.dx,dy:b.dy,game:{width:b.game.width,height:b.game.height}})
-        // })
-        // if(this.game.laser.frameTimer>this.game.laser.frameInterval&&this.game.controller.keys.includes('ArrowUp')){
-        //     this.socket.emit('bullet',{x:this.game.laser.startX,y:this.game.laser.startY,dx:this.game.laser.dx,dy:this.game.laser.dy,game:{width:this.game.width,height:this.game.height}});
-        // } 
         
         if(this.frameTimer>this.frameInterval){
             this.frameTimer=0;

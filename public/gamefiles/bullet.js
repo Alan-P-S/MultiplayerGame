@@ -1,4 +1,5 @@
-import {Death} from "./deathanimation.js";
+
+
 export class Bullet{
     constructor(x,y,dx,dy,game){
         this.startX=x;

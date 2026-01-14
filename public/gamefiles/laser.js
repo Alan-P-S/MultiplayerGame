@@ -1,5 +1,6 @@
 import { Death } from "./deathanimation.js";
 import { Bullet } from "./bullet.js";
+import {socket} from "./socket.js"
 export class Laser{
     constructor(game){
         this.game=game;
@@ -17,7 +18,7 @@ export class Laser{
         this.angle=0;
         this.startX=0;
         this.startY=0;
-        this.socket = io();
+        this.socket=socket
     }
 
     update(input,deltatime){
